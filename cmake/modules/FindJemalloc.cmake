@@ -77,7 +77,7 @@ if(Jemalloc_INCLUDE_DIR)
 	if(TARGET Jemalloc::jemalloc)
 		try_compile(_Jemalloc_BUILD_WITHOUT_DL
 			${CMAKE_BINARY_DIR}
-			"${CMAKE_SOURCE_DIR}/cmake/utils/CheckJemallocBuilds.c"
+			"${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/CheckJemallocBuilds.c"
 			LINK_LIBRARIES Jemalloc::jemalloc
 			OUTPUT_VARIABLE _Jemalloc_BUILD_OUTPUT
 		)

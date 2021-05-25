@@ -69,7 +69,7 @@ function(add_native_executable NAME)
 		set(NATIVE_LINK "${CMAKE_CURRENT_BINARY_DIR}/native-${NAME}")
 
 		configure_file(
-			"${CMAKE_SOURCE_DIR}/cmake/templates/NativeBuildRunner.cmake.in"
+			"${secp256k1_SOURCE_DIR}/cmake/templates/NativeBuildRunner.cmake.in"
 			"${CMAKE_CURRENT_BINARY_DIR}/build_native_${NAME}.sh"
 		)
 
@@ -120,7 +120,7 @@ function(_gen_native_cmake_target)
 
 	file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/config")
 	configure_file(
-		"${CMAKE_SOURCE_DIR}/cmake/templates/NativeCmakeRunner.cmake.in"
+		"${secp256k1_SOURCE_DIR}/cmake/templates/NativeCmakeRunner.cmake.in"
 		"${CMAKE_BINARY_DIR}/config/run_native_cmake.sh"
 	)
 endfunction(_gen_native_cmake_target)
@@ -151,5 +151,5 @@ if(NOT __IS_NATIVE_BUILD AND NOT TARGET native-cmake-build)
 	add_custom_target(native-cmake-build DEPENDS "${NATIVE_BUILD_DIR}/CMakeCache.txt")
 
 	# Add the native directory to the list of file to cleanup.
-	set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${NATIVE_BUILD_DIR}")
+	set_property(DIRECTORY "${secp256k1_SOURCE_DIR}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${NATIVE_BUILD_DIR}")
 endif()

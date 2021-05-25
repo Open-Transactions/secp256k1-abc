@@ -6,7 +6,7 @@ cd "${NATIVE_BUILD_DIR}"
 
 # Ok let's generate a depfile if we can.
 if test "x${CMAKE_GENERATOR}" = "xNinja"; then
-    "${CMAKE_SOURCE_DIR}/cmake/utils/gen-ninja-deps.py" \
+    "${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/gen-ninja-deps.py" \
         --build-dir "${NATIVE_BUILD_DIR}" \
         --base-dir "${CMAKE_BINARY_DIR}" \
         --ninja "${CMAKE_MAKE_PROGRAM}" \

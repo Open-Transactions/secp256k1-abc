@@ -29,7 +29,7 @@ function(generate_windows_version_info TARGET)
 
 	# First replace the variables
 	configure_file(
-		"${CMAKE_SOURCE_DIR}/cmake/templates/version.rc.in"
+		"${${PROJECT_NAME}_SOURCE_DIR}/cmake/templates/version.rc.in"
 		"${TARGET}-version.rc.in"
 	)
 

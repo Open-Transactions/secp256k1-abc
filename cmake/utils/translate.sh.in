@@ -13,20 +13,20 @@ check_command xgettext
 check_command lupdate
 check_command git
 
-GETTEXT_SOURCES=$("@GIT_EXECUTABLE@" ls-files "@CMAKE_SOURCE_DIR@/src/*.cpp" "@CMAKE_SOURCE_DIR@/src/*.h" | \
+GETTEXT_SOURCES=$("@GIT_EXECUTABLE@" ls-files "@${PROJECT_NAME}_SOURCE_DIR@/src/*.cpp" "@CMAKE_SOURCE_DIR@/src/*.h" | \
   grep -v secp256k1 | \
   grep -v crypto/ctaes | \
   grep -v leveldb | \
   grep -v univalue)
 
 COPYRIGHT_HOLDERS="@COPYRIGHT_HOLDERS@" \
-"@Python_EXECUTABLE@" "@CMAKE_SOURCE_DIR@/share/qt/extract_strings_qt.py" ${GETTEXT_SOURCES}
+"@Python_EXECUTABLE@" "@${PROJECT_NAME}_SOURCE_DIR@/share/qt/extract_strings_qt.py" ${GETTEXT_SOURCES}
 
 LUPDATE_FILES=$("@GIT_EXECUTABLE@" ls-files \
-  "@CMAKE_SOURCE_DIR@/src/qt/*.cpp" \
-  "@CMAKE_SOURCE_DIR@/src/qt/*.h" \
-  "@CMAKE_SOURCE_DIR@/src/qt/*.mm" \
-  "@CMAKE_SOURCE_DIR@/src/qt/forms/*.ui")
+  "@${PROJECT_NAME}_SOURCE_DIR@/src/qt/*.cpp" \
+  "@${PROJECT_NAME}_SOURCE_DIR@/src/qt/*.h" \
+  "@${PROJECT_NAME}_SOURCE_DIR@/src/qt/*.mm" \
+  "@${PROJECT_NAME}_SOURCE_DIR@/src/qt/forms/*.ui")
 
 QT_SELECT=qt5 \
 lupdate "@CMAKE_CURRENT_SOURCE_DIR@/bitcoinstrings.cpp" \

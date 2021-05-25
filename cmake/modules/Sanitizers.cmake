@@ -38,7 +38,7 @@ function(enable_sanitizers)
 	add_link_options(${_fsanitize_option})
 
 	include(TestSuite)
-	set(SAN_SUPP_DIR "${CMAKE_SOURCE_DIR}/test/sanitizer_suppressions")
+	set(SAN_SUPP_DIR "${${PROJECT_NAME}_SOURCE_DIR}/test/sanitizer_suppressions")
 	if("address" IN_LIST ARGN)
 		add_test_environment(ASAN_OPTIONS "malloc_context_size=0:$ENV{ASAN_OPTIONS}")
 		add_test_environment(ASAN_OPTIONS "detect_stack_use_after_return=1:$ENV{ASAN_OPTIONS}")
