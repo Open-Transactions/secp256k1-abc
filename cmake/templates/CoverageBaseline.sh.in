@@ -12,5 +12,5 @@ set -e
   -o baseline_raw.info
 
 # Remove the coverage data for the paths matching any of the patterns.
-"${__COVERAGE_PYTHON}" "${CMAKE_SOURCE_DIR}/cmake/utils/filter-lcov.py" \
+"${__COVERAGE_PYTHON}" "${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/filter-lcov.py" \
   ${LCOV_FILTER_PATTERN} baseline_raw.info "${CMAKE_BINARY_DIR}/baseline.info"

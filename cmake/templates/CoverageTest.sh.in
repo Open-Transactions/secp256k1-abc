@@ -13,7 +13,7 @@ set -e
   -z -d "${CMAKE_BINARY_DIR}"
 
 # Remove the coverage data for the paths matching any of the patterns.
-"${__COVERAGE_PYTHON}" "${CMAKE_SOURCE_DIR}/cmake/utils/filter-lcov.py" \
+"${__COVERAGE_PYTHON}" "${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/filter-lcov.py" \
   ${LCOV_FILTER_PATTERN} "${TARGET}.info" "${TARGET}_filtered.info"
 
 # Add (-a) the baseline and test coverage data files to combine them

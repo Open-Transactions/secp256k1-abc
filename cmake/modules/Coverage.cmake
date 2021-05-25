@@ -117,7 +117,7 @@ function(add_custom_target_coverage TARGET)
 	# Make sure we generate the base coverage data before building this target.
 	if(NOT TARGET coverage-baseline)
 		configure_file(
-			"${CMAKE_SOURCE_DIR}/cmake/templates/CoverageBaseline.sh.in"
+			"${${PROJECT_NAME}_SOURCE_DIR}/cmake/templates/CoverageBaseline.sh.in"
 			"${CMAKE_BINARY_DIR}/CoverageBaseline.sh"
 		)
 
@@ -136,7 +136,7 @@ function(add_custom_target_coverage TARGET)
 	sanitize_c_cxx_definition("" "${TARGET}" SANITIZED_TARGET)
 
 	configure_file(
-		"${CMAKE_SOURCE_DIR}/cmake/templates/CoverageTest.sh.in"
+		"${${PROJECT_NAME}_SOURCE_DIR}/cmake/templates/CoverageTest.sh.in"
 		"${CMAKE_BINARY_DIR}/Coverage-${TARGET}.sh"
 	)
 

@@ -64,7 +64,7 @@ if(Event_INCLUDE_DIR)
 		elseif(NOT CMAKE_CROSSCOMPILING)
 			try_run(_Event_CheckVersion_RESULT _Event_CheckVersion_BUILD
 				"${CMAKE_BINARY_DIR}"
-				"${CMAKE_SOURCE_DIR}/cmake/utils/EventCheckVersion.cpp"
+				"${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/EventCheckVersion.cpp"
 				CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${Event_INCLUDE_DIRS}"
 				LINK_LIBRARIES "${Event_event_LIBRARY}"
 				RUN_OUTPUT_VARIABLE _Event_VERSION

@@ -5,7 +5,7 @@ option(ENABLE_JUNIT_REPORT "Enable Junit report generation for targets that supp
 set(JUNIT_REPORT_DIRECTORY "${CMAKE_BINARY_DIR}/test/junit")
 set(TEST_LOG_DIRECTORY "${CMAKE_BINARY_DIR}/test/log")
 set_property(
-	DIRECTORY "${CMAKE_SOURCE_DIR}"
+	DIRECTORY "${${PROJECT_NAME}_SOURCE_DIR}"
 	APPEND PROPERTY ADDITIONAL_CLEAN_FILES
 		"${CMAKE_BINARY_DIR}/test/tmp"
 		"${JUNIT_REPORT_DIRECTORY}"
@@ -118,7 +118,7 @@ function(add_test_runner SUITE NAME EXECUTABLE)
 
 	add_test_custom_target(${TARGET}
 		TEST_COMMAND
-			"${CMAKE_SOURCE_DIR}/cmake/utils/log-and-print-on-failure.sh"
+			"${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/log-and-print-on-failure.sh"
 			"${TEST_LOG_DIRECTORY}/${SUITE}-${NAME}.log"
 			${CMAKE_CROSSCOMPILING_EMULATOR} "$<TARGET_FILE:${EXECUTABLE}>" ${ARG_UNPARSED_ARGUMENTS}
 		CUSTOM_TARGET_ARGS
@@ -134,7 +134,7 @@ function(add_test_runner SUITE NAME EXECUTABLE)
 			COMMENT "Processing junit report for test ${NAME} from suite ${SUITE}"
 			COMMAND_EXPAND_LISTS
 			COMMAND
-				"${Python_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/cmake/utils/junit-reports-merge.py"
+				"${Python_EXECUTABLE}" "${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/junit-reports-merge.py"
 				"${JUNIT_REPORT_DIRECTORY}"
 				"${CMAKE_BINARY_DIR}/test/tmp"
 				"${SUITE}"

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.16)
 project(secp256k1 LANGUAGES C VERSION 0.1.0)
 
 # Add path for custom modules when building as a standalone project
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${${PROJECT_NAME}_SOURCE_DIR}/cmake/modules)
 
 # Default to RelWithDebInfo configuration
 if(NOT CMAKE_BUILD_TYPE)
@@ -65,8 +65,11 @@ include_directories(
 )
 
 # The library
-add_library(secp256k1 src/secp256k1.c)
-target_include_directories(secp256k1 PUBLIC include)
+add_library(secp256k1-obj OBJECT src/secp256k1.c)
+add_library(secp256k1-lib $<TARGET_OBJECTS:secp256k1-obj>)
+add_library(secp256k1 ALIAS secp256k1-lib)
+target_include_directories(secp256k1-lib PUBLIC include)
+target_include_directories(secp256k1-obj INTERFACE include)
 
 set(SECP256K1_PUBLIC_HEADERS
 	include/secp256k1.h
@@ -115,7 +118,8 @@ if(SECP256K1_USE_ASM)
 		enable_language(ASM)
 		set(USE_EXTERNAL_ASM 1)
 		add_library(secp256k1_common src/asm/field_10x26_arm.s)
-		target_link_libraries(secp256k1 secp256k1_common)
+		target_link_libraries(secp256k1-obj secp256k1_common)
+		target_link_libraries(secp256k1-lib secp256k1_common)
 	else()
 		unsupported_asm_error()
 	endif()
@@ -124,10 +128,10 @@ endif()
 set(SECP256K1_TEST_OVERRIDE_WIDE_MULTIPLY "" CACHE STRING "Test-only override of the (autodetected by the C code) \"widemul\" setting (can be int64 or int128)")
 if(SECP256K1_TEST_OVERRIDE_WIDE_MULTIPLY STREQUAL "int128")
 	message(STATUS "Force the use of the (unsigned) __int128 based wide multiplication implementation")
-	target_compile_definitions(secp256k1 PUBLIC USE_FORCE_WIDEMUL_INT128=1)
+	target_compile_definitions(secp256k1-obj PUBLIC USE_FORCE_WIDEMUL_INT128=1)
 elseif(SECP256K1_TEST_OVERRIDE_WIDE_MULTIPLY STREQUAL "int64")
 	message(STATUS "Force the use of the (u)int64_t based wide multiplication implementation")
-	target_compile_definitions(secp256k1 PUBLIC USE_FORCE_WIDEMUL_INT64=1)
+	target_compile_definitions(secp256k1-obj PUBLIC USE_FORCE_WIDEMUL_INT64=1)
 endif()
 
 option(SECP256K1_BUILD_TEST "Build secp256k1's unit tests" ON)
@@ -151,7 +155,7 @@ endif()
 # Executable internal to secp256k1 need to have the HAVE_CONFIG_H define set.
 # For convenience, we wrap this into a function.
 function(link_secp256k1_internal NAME)
-	target_link_libraries(${NAME} secp256k1)
+	target_link_libraries(${NAME} secp256k1-lib)
 	target_compile_definitions(${NAME} PRIVATE HAVE_CONFIG_H SECP256K1_BUILD)
 	if(SECP256K1_BUILD_OPENSSL_TESTS)
 		target_link_libraries(${NAME} OpenSSL::Crypto)
@@ -163,23 +167,26 @@ include(InstallationHelper)
 # Phony target to build benchmarks
 add_custom_target(bench-secp256k1)
 
+option(SECP256K1_BUILD_BENCH "Build secp256k1's benchmarks" ON)
 function(add_secp256k1_bench NAME)
-	set(EXECUTABLE_NAME "${NAME}-bench")
-	add_executable(${EXECUTABLE_NAME} ${ARGN})
-	link_secp256k1_internal(${EXECUTABLE_NAME})
+	if(SECP256K1_BUILD_BENCH)
+		set(EXECUTABLE_NAME "${NAME}-bench")
+		add_executable(${EXECUTABLE_NAME} ${ARGN})
+		link_secp256k1_internal(${EXECUTABLE_NAME})
 
-	set(BENCH_NAME "bench-secp256k1-${NAME}")
-	add_custom_target(${BENCH_NAME}
-		COMMENT "Benchmarking libsecp256k1 ${NAME}"
-		COMMAND ${EXECUTABLE_NAME}
-		USES_TERMINAL
-	)
-	add_dependencies(bench-secp256k1 ${BENCH_NAME})
+		set(BENCH_NAME "bench-secp256k1-${NAME}")
+		add_custom_target(${BENCH_NAME}
+			COMMENT "Benchmarking libsecp256k1 ${NAME}"
+			COMMAND ${EXECUTABLE_NAME}
+			USES_TERMINAL
+		)
+		add_dependencies(bench-secp256k1 ${BENCH_NAME})
 
-	install_target("${EXECUTABLE_NAME}"
-		COMPONENT secp256k1-bench
-		EXCLUDE_FROM_ALL
-	)
+		install_target("${EXECUTABLE_NAME}"
+			COMPONENT secp256k1-bench
+			EXCLUDE_FROM_ALL
+		)
+	endif()
 endfunction(add_secp256k1_bench)
 
 # ECDH module
@@ -269,7 +276,7 @@ if(SECP256K1_ECMULT_STATIC_PRECOMPUTATION)
 		COMMAND gen_context
 	)
 
-	target_sources(secp256k1 PRIVATE src/ecmult_static_context.h)
+	target_sources(secp256k1-obj PRIVATE src/ecmult_static_context.h)
 endif()
 
 # If this project is not the top level project, then don't install by default
@@ -279,18 +286,18 @@ if(SECP256K1_PARENT_DIRECTORY)
 endif()
 
 if(BUILD_SHARED_LIBS)
-	install_shared_library(secp256k1
+	install_shared_library(secp256k1-lib
 		PUBLIC_HEADER ${SECP256K1_PUBLIC_HEADERS}
 		${SECP256K1_INSTALL_EXCLUDE_FROM_ALL}
 	)
 else()
-	set_property(TARGET secp256k1 PROPERTY PUBLIC_HEADER ${SECP256K1_PUBLIC_HEADERS})
-	install_target(secp256k1 ${SECP256K1_INSTALL_EXCLUDE_FROM_ALL})
+	set_property(TARGET secp256k1-lib PROPERTY PUBLIC_HEADER ${SECP256K1_PUBLIC_HEADERS})
+	install_target(secp256k1-lib ${SECP256K1_INSTALL_EXCLUDE_FROM_ALL})
 endif()
 
 # Generate the config
 configure_file(src/libsecp256k1-config.h.cmake.in src/libsecp256k1-config.h ESCAPE_QUOTES)
-target_compile_definitions(secp256k1 PRIVATE HAVE_CONFIG_H SECP256K1_BUILD)
+target_compile_definitions(secp256k1-obj PRIVATE HAVE_CONFIG_H SECP256K1_BUILD)
 
 # Build the Java binding
 option(SECP256K1_ENABLE_JNI "Enable the Java Native Interface binding" OFF)
@@ -319,17 +326,18 @@ if(SECP256K1_ENABLE_JNI)
 	# property set, so it's associated source files won't be built with PIC
 	# enabled. That would cause the linker to fail.
 	# Forcing the property for the secp256k1 library fixes the issue.
-	set_target_properties(secp256k1 PROPERTIES POSITION_INDEPENDENT_CODE ON)
+	set_target_properties(secp256k1-obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+	set_target_properties(secp256k1-lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 	link_secp256k1_internal(secp256k1_jni)
 endif()
 
 # Tests
 if(SECP256K1_BUILD_TEST)
 	include(TestSuite)
-	create_test_suite(secp256k1)
+	create_test_suite(secp256k1-lib)
 
 	function(create_secp256k1_test NAME FILES)
-		add_test_to_suite(secp256k1 ${NAME} EXCLUDE_FROM_ALL ${FILES})
+		add_test_to_suite(secp256k1-lib ${NAME} EXCLUDE_FROM_ALL ${FILES})
 		link_secp256k1_internal(${NAME})
 	endfunction()
 

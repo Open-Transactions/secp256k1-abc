@@ -41,7 +41,7 @@ function(_add_install_target COMPONENT)
 			add_custom_target("install-${COMPONENT}-debug"
 				COMMENT "Splitting out the debug symbols for component ${COMPONENT}"
 				COMMAND
-					"${CMAKE_SOURCE_DIR}/cmake/utils/split-installed-component.sh"
+					"${${PROJECT_NAME}_SOURCE_DIR}/cmake/utils/split-installed-component.sh"
 					"${CMAKE_BINARY_DIR}/contrib/devtools/split-debug.sh"
 					"${CMAKE_BINARY_DIR}/install_manifest_${COMPONENT}.txt"
 					"${CMAKE_INSTALL_BINDIR}"
@@ -203,7 +203,7 @@ function(install_manpages TARGET)
 		set(INPUT_DIR "${CMAKE_INSTALL_PREFIX}/${MAN_DESTINATION}")
 		set(OUTPUT_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_MANDIR}/html")
 		configure_file(
-			"${CMAKE_SOURCE_DIR}/cmake/templates/man2html.sh.in"
+			"${${PROJECT_NAME}_SOURCE_DIR}/cmake/templates/man2html.sh.in"
 			"${CMAKE_BINARY_DIR}/config/man2html.sh"
 			@ONLY
 		)
