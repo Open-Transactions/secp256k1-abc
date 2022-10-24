@@ -3,6 +3,15 @@
 cmake_minimum_required(VERSION 3.16)
 project(secp256k1 LANGUAGES C VERSION 0.1.0)
 
+# Detect building as a subproject
+if("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+	set(SECP256K1_STANDALONE ON)
+else()
+	set(SECP256K1_STANDALONE OFF)
+	# If this project is not the top level project, then don't install by default
+	set(SECP256K1_INSTALL_EXCLUDE_FROM_ALL EXCLUDE_FROM_ALL)
+endif()
+
 # Add path for custom modules when building as a standalone project
 list(APPEND CMAKE_MODULE_PATH ${${PROJECT_NAME}_SOURCE_DIR}/cmake/modules)
 
@@ -67,7 +76,13 @@ include_directories(
 
 # The library
 add_library(secp256k1-obj OBJECT src/secp256k1.c)
-add_library(secp256k1-lib $<TARGET_OBJECTS:secp256k1-obj>)
+
+if(SECP256K1_STANDALONE)
+	add_library(secp256k1-lib $<TARGET_OBJECTS:secp256k1-obj>)
+else()
+	add_library(secp256k1-lib STATIC $<TARGET_OBJECTS:secp256k1-obj>)
+endif()
+
 add_library(secp256k1 ALIAS secp256k1-lib)
 target_include_directories(secp256k1-lib PUBLIC include)
 target_include_directories(secp256k1-obj INTERFACE include)
@@ -118,7 +133,7 @@ if(SECP256K1_USE_ASM)
 	elseif(SECP256K1_ASM_BUILD_TARGET MATCHES "arm-linux-gnueabihf")
 		enable_language(ASM)
 		set(USE_EXTERNAL_ASM 1)
-		add_library(secp256k1_common src/asm/field_10x26_arm.s)
+		add_library(secp256k1_common STATIC src/asm/field_10x26_arm.s)
 		target_link_libraries(secp256k1-obj secp256k1_common)
 		target_link_libraries(secp256k1-lib secp256k1_common)
 	else()
@@ -258,13 +273,7 @@ if(SECP256K1_ECMULT_STATIC_PRECOMPUTATION)
 	target_sources(secp256k1-obj PRIVATE src/ecmult_static_context.h)
 endif()
 
-# If this project is not the top level project, then don't install by default
-get_directory_property(SECP256K1_PARENT_DIRECTORY PARENT_DIRECTORY)
-if(SECP256K1_PARENT_DIRECTORY)
-  set(SECP256K1_INSTALL_EXCLUDE_FROM_ALL EXCLUDE_FROM_ALL)
-endif()
-
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS AND SECP256K1_STANDALONE)
 	install_shared_library(secp256k1-lib
 		PUBLIC_HEADER ${SECP256K1_PUBLIC_HEADERS}
 		${SECP256K1_INSTALL_EXCLUDE_FROM_ALL}
